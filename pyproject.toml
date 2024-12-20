@@ -1,0 +1,34 @@
+[project]
+name = "dynamic-pydantic"
+version = "0.1.0"
+license = {file = "LICENSE"}
+description = "Dynamic Pydantic is the easiest way to create and validate AI agent tools and databases."
+keywords = ["instructor", "pydantic", "AI Agents"]
+authors = [
+    {name = "Luka", email = "luka@lukafilipovic.com" },
+]
+readme = {file = "README.md", content-type = "text/markdown"}
+requires-python = ">=3.10"
+dependencies = [
+    "instructor",
+    "litellm",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+examples = [
+    "stealth-requests[parsers]"
+    ]
+
+[tool.setuptools]
+# https://github.com/astral-sh/uv/issues/9513#issuecomment-2519527822
+license-files = []
+
+[project.urls]
+Repository = "https://github.com/lukafilipxvic/dynamic-pydantic"
+Changelog = "https://github.com/lukafilipxvic/dynamic-pydantic/blob/main/CHANGELOG.md"
+Releases = "https://github.com/lukafilipxvic/dynamic-pydantic/releases"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
