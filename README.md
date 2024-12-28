@@ -7,7 +7,7 @@ The project leverages Instructor and Pydantic to generate models dynamically bas
 
 ## Installation
 ```bash
-pip install dynamic-pydantic
+uv pip install dynamic-pydantic
 ```
 
 ## Contributing
