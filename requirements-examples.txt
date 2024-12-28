@@ -1,1 +1,3 @@
 stealth_requests[parsers]
+pydantic-ai
+pymupdf4llm

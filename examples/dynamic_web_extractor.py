@@ -1,4 +1,3 @@
-# pip install install stealth-requests[parsers]
 import os
 from stealth_requests import StealthSession
 from dynamic_pydantic import dynamic_model
@@ -27,7 +26,6 @@ if __name__ == "__main__":
     genModel = dynamic_model(extract=md_extract, prompt='Brand, Product Name, Price', iteration=True, llm_model=LLM_MODEL)
     print(f'Generated Schema: {genModel.schema_json()}')
 
-    # Extract data to generated model
     client = instructor.from_litellm(completion)
 
     resp = client.chat.completions.create(
@@ -43,7 +41,7 @@ if __name__ == "__main__":
         }
     ],
     response_model=genModel,
-    max_retries=5,
+    max_retries=8,
     )
 
     print(f'Extracted website data: {resp}')

@@ -1,6 +1,6 @@
 [project]
 name = "dynamic-pydantic"
-version = "0.1.0"
+version = "0.1.1"
 license = {file = "LICENSE"}
 description = "Dynamic Pydantic is the easiest way to create and validate AI agent tools and databases."
 keywords = ["instructor", "pydantic", "AI Agents"]
@@ -17,7 +17,9 @@ dependencies = [
 
 [project.optional-dependencies]
 examples = [
-    "stealth-requests[parsers]"
+    "stealth-requests[parsers]",
+    "pydantic-ai",
+    "pymupdf4llm"
     ]
 
 [tool.setuptools]

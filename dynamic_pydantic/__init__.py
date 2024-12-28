@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Set pydantic models
 class Variable(BaseModel):
     name: str
     type: Literal['str', 'int', 'bool', 'float', 'list[str]']
@@ -18,62 +17,49 @@ class Schema(BaseModel):
     variables: list[Variable]
     
 
-# Enable instructor litellm patches 
 client = instructor.from_litellm(completion)
 
-# Schema generation
-def dynamic_model(extract: str = None, prompt: str = None, iteration: bool = False, llm_model: str = os.getenv("LLM_MODEL")) -> type[BaseModel]:
-    '''
-    Generate pydantic models dynamically using a prompt and additional extract for context.
-    '''
-    formatted_extract = f"<content>\n{extract}\n</content>" if extract is not None else ''
-    iterate = "The variables must be iterable." if iteration==True else ""
+def dynamic_model(
+    extract: str = None,
+    prompt: str = None,
+    iteration: bool = False,
+    llm_model: str = os.getenv("LLM_MODEL")
+) -> type[BaseModel]:
+    """
+    Generate Pydantic models dynamically using user-defined prompts and optional extracts.
+    """
+    # Build the prompt dynamically
+    formatted_extract = f"<content>\n{extract}\n</content>" if extract else ''
+    default_prompt = """
+    You are an advanced schema generation tool designed to create structured Pydantic schemas.
+    Generate a schema based on the provided content and guidelines.
+    """
+    final_prompt = prompt or default_prompt
+    complete_prompt = f"""
+    {final_prompt}
 
-    if not prompt:
-        prompt ='''
-        <user_request>
-        Generate a schema based on the provided extract content.
-        </user_request>
-        '''
+    {formatted_extract}
+
+    Guidelines for schema generation:
+    1. Ensure the schema is complete and accurately represents the user's request.
+    2. Use appropriate Pydantic types for each field (e.g., str, int, bool, float, list).
+    3. Provide clear and concise field descriptions.
+    4. Handle ambiguities by using general best practices.
+    5. If the schema should be iterable, ensure the output is a list of schemas.
+
+    Return the most relevant schema based on the user's request.
+    """
 
     resp = client.chat.completions.create(
-    model=llm_model, 
-    messages=[
-        {
-            "role": "system",
-            "content": f'''
-            You are an advanced schema generation tool designed to create structured Pydantic schema. Your task is to analyze the provided web extract and generate a schema that accurately represents the data structure.
-
-            {formatted_extract}
-            
-            {prompt}
-
-            <schema_block>
-            {Schema.model_json_schema}
-            </schema_block>
-
-            You will return the most relevant Pydantic schema based on the user's request.
-            {iterate}
-
-            Guidelines for schema generation:
-            1. Ensure that the schema is complete and accurately reflects the data types and structure present in the extract.
-            2. Use appropriate Pydantic types for each field (e.g., str, int, list, etc.).
-            3. Provide clear and concise descriptions for each field based on the content of the extract.
-            4. If the extract is empty or unclear, generate a default schema with common fields based on typical data structures.
-            5. If the user has specified that the schema should be iterable, ensure that the output is a list of the generated schema.
-            6. Avoid common mistakes such as using incorrect variable types or vague descriptions.
-
-            Before outputting your answer, double-check that the Pydantic schema you are returning is complete and contains the correct information requested by the user. If you encounter any ambiguities, ask clarifying questions to ensure accuracy.
-            ''',
-        },
-    ],
-    response_model=Schema,
+        model=llm_model,
+        messages=[{"role": "system", "content": complete_prompt}],
+        response_model=Schema,
     )
 
     genSchema = resp.model_dump()
-
     variableSchema = [(var['name'], var['type'], var['description']) for var in genSchema['variables']]
 
+    # Dynamically create the Pydantic model
     generatedSchema = create_model(
         genSchema['schemaName'],
         **{
@@ -82,7 +68,9 @@ def dynamic_model(extract: str = None, prompt: str = None, iteration: bool = Fal
         },
         __base__=BaseModel,
     )
-  
-    if iteration:   # Turn into list[generatedSchema] for iterable data extraction.
-        return create_model("StructuredData",data=(list[generatedSchema], ...))
+
+    # Iterate the model if required
+    if iteration:
+        return create_model("StructuredData", data=(list[generatedSchema], ...))
     return generatedSchema
+
