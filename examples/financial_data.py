@@ -29,7 +29,7 @@ if __name__ == "__main__":
     # Generate model
     genModel = dynamic_model(extract=md_text,
                              prompt='''
-                            Create a pydantic model that represents Apple's Statement of Income.''',
+                            Create a pydantic model that contains EVERY line item in Apple's Statement of Income.''',
                              iteration=True,
                              llm_model=LLM_MODEL
                              )
